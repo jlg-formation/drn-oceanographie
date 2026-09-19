@@ -1,7 +1,7 @@
 [project]
 name = "drn-oceanographie"
 version = "0.1.0"
-description = "Add your description here"
+description = "Formation ORSYS DRN avec données océanographique"
 readme = "README.md"
 authors = [
     { name = "Jean-Louis GUENEGO", email = "jlguenego@gmail.com" }
