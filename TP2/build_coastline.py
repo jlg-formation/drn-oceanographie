@@ -41,7 +41,7 @@ def emprise() -> tuple[float, float, float, float]:
     """Lit l'emprise (lon/lat min/max) du modèle dans metadata.json."""
     if not META_PATH.exists():
         raise SystemExit(
-            "metadata.json introuvable : lance d'abord `mise run tp2_train`."
+            "metadata.json introuvable : lance d'abord `mise run tp2_02_train`."
         )
     norm = json.loads(META_PATH.read_text(encoding="utf-8"))["normalization"]
     return norm["lon_min"], norm["lat_min"], norm["lon_max"], norm["lat_max"]

@@ -10,7 +10,11 @@ Usage :
 
 from __future__ import annotations
 
+import gzip
+import io
 import sys
+import urllib.request
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +26,35 @@ if hasattr(sys.stdout, "reconfigure"):
 
 DATA_DIR = Path(__file__).parent / "data"
 NC_FILE = DATA_DIR / "HYDRODYN-SURF_HYCOM3D-SURF_R1000_MANGASC_20260911.nc"
+
+# Archive d'origine sur le portail de téléchargement du SHOM (data.shom.fr).
+ZIP_URL = (
+    "https://services.data.shom.fr/telechargement/oceano/"
+    "HYDRODYN-SURF_HYCOM3D-SURF_R1000_MANGASC_20260911.dl/file/"
+    "HYDRODYN-SURF_HYCOM3D-SURF_R1000_MANGASC_20260911.dl.zip"
+)
+
+
+def telecharger_donnees() -> None:
+    """Télécharge l'archive SHOM et extrait le NetCDF si le fichier est absent."""
+    if NC_FILE.exists():
+        return
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    print("Fichier NetCDF absent. Téléchargement depuis le SHOM :")
+    print(f"  {ZIP_URL}")
+    with urllib.request.urlopen(ZIP_URL) as resp:
+        archive = io.BytesIO(resp.read())
+    with zipfile.ZipFile(archive) as zf:
+        membre = next(
+            (n for n in zf.namelist() if n.endswith((".nc.gz", ".nc"))), None
+        )
+        if membre is None:
+            raise SystemExit("Aucun fichier .nc(.gz) trouvé dans l'archive SHOM.")
+        contenu = zf.read(membre)
+    if membre.endswith(".gz"):
+        contenu = gzip.decompress(contenu)
+    NC_FILE.write_bytes(contenu)
+    print(f"Extrait : {NC_FILE.name} ({NC_FILE.stat().st_size / 1e6:.1f} Mo)")
 
 
 def separateur(titre: str) -> None:
@@ -109,8 +142,7 @@ def decrire_emprise(ds: xr.Dataset) -> None:
 
 
 def main() -> None:
-    if not NC_FILE.exists():
-        raise SystemExit(f"Fichier introuvable : {NC_FILE}")
+    telecharger_donnees()
 
     print(f"Ouverture de : {NC_FILE.name}")
     print(f"Taille : {NC_FILE.stat().st_size / 1e6:.1f} Mo")

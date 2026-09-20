@@ -4,24 +4,37 @@ bun = "1.4.2"
 
 [tasks.prepare]
 description = "Reconstruit l'environnement après un `git clean` : .venv (Python) et node_modules (front-end)"
-depends = ["prepare_python", "prepare_front"]
+run = [
+  "uv sync",
+  "bun install",
+]
 
-[tasks.prepare_python]
-description = "Installe les dépendances Python dans .venv (uv sync)"
-run = "uv sync"
+[tasks.tp2_01_explore]
+description = "Télécharge (si besoin) et explore le fichier NetCDF SHOM (TP2)"
+run = "uv run python TP2/explore.py"
 
-[tasks.prepare_front]
-description = "Installe les dépendances front-end dans node_modules (bun install)"
-run = "bun install"
-
-[tasks.tp2_train]
+[tasks.tp2_02_train]
 description = "Entraîne le MLP de température et exporte le modèle ONNX (TP2)"
 run = "uv run python TP2/train_temperature_mlp.py"
 
-[tasks.tp2_train_fourier]
+[tasks.tp2_03_train_fourier]
 description = "Entraîne le MLP + Fourier features et exporte le modèle ONNX (TP2)"
 run = "uv run python TP2/train_temperature_mlp.py --fourier"
 
-[tasks.tp2_coastline]
+[tasks.tp2_04_coastline]
 description = "Génère le trait de côte Natural Earth recadré (TP2/model/land.geojson)"
 run = "uv run python TP2/build_coastline.py"
+
+[tasks.tp2_05_web]
+description = "Lance le site web du TP2 (serveur de dev Vite sur http://localhost:5173)"
+run = "bun run dev"
+
+[tasks.tp2]
+description = "Workflow TP2 complet : explore -> train -> train_fourier -> coastline -> web"
+run = [
+  "mise run tp2_01_explore",
+  "mise run tp2_02_train",
+  "mise run tp2_03_train_fourier",
+  "mise run tp2_04_coastline",
+  "mise run tp2_05_web",
+]

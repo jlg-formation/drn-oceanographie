@@ -16,7 +16,7 @@ TP2/front-end/dist/
 .vite/
 
 # ---- Artefacts générés (recréés par les tâches mise) ----
-# Modèles ONNX, métadonnées et trait de côte : `mise run tp2_train*` / `tp2_coastline`
+# Modèles ONNX, métadonnées et trait de côte : `mise run tp2_02_train*` / `tp2_04_coastline`
 TP2/model/
 
 # ---- Données océanographiques téléchargées (fichiers lourds) ----
