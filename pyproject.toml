@@ -12,7 +12,7 @@ dependencies = [
     "onnx>=1.23.0",
     "onnxruntime>=1.30.0",
     "onnxscript>=0.7.2",
-    "pillow>=12.3.0",
+    "shapely>=2.1.2",
     "torch>=2.14.0",
     "xarray>=2026.2.0",
 ]

@@ -1,5 +1,4 @@
 import * as ort from "onnxruntime-web";
-import type { Grid } from "./sea-mask";
 
 // Les binaires WASM d'onnxruntime-web sont servis depuis le CDN jsDelivr,
 // à la version installée dans node_modules (voir package.json).
@@ -22,8 +21,6 @@ export interface Metadata {
   output_unit: string;
   fourier: boolean;
   normalization: Normalization;
-  grid: Grid;
-  sea_mask: string;
 }
 
 /** Réseau de température chargé en ONNX + ses constantes de normalisation. */

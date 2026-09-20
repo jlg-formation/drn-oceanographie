@@ -1,33 +1,41 @@
-# Python-generated files
+# ---- Python ----
 __pycache__/
-*.py[oc]
+*.py[cod]
+*.egg-info/
 build/
-dist/
 wheels/
-*.egg-info
 
-# Node / front-end
+# Environnements virtuels / uv
+.venv/
+
+# ---- Node / front-end (Bun + Vite) ----
 node_modules/
+dist/
 TP2/front-end/dist/
+*.tsbuildinfo
+.vite/
 
-# Artefacts de modèle générés (recréés par `mise run tp2_train*`)
+# ---- Artefacts générés (recréés par les tâches mise) ----
+# Modèles ONNX, métadonnées et trait de côte : `mise run tp2_train*` / `tp2_coastline`
 TP2/model/
 
-# Virtual environments
-.venv
-
-# Données océanographiques téléchargées (fichiers lourds)
+# ---- Données océanographiques téléchargées (fichiers lourds) ----
 TP2/data/
 *.nc
 *.nc.gz
 *.zip
 *.gz
 
-# Éditeurs / OS
+# ---- Logs ----
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# ---- Éditeurs / OS ----
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
-# Notebooks
+# ---- Notebooks ----
 .ipynb_checkpoints/

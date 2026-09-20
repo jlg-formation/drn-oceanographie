@@ -1,11 +1,12 @@
 import L from "leaflet";
 import type { TemperatureModel } from "./inference";
-import type { SeaMask } from "./sea-mask";
+import type { Coastline, Emprise } from "./coastline";
 import { thermalColor } from "./colormap";
 
 interface FieldOptions {
   model: TemperatureModel;
-  mask: SeaMask;
+  coast: Coastline;
+  emprise: Emprise;
   vmin: number;
   vmax: number;
   /** Pas d'échantillonnage en pixels (plus petit = plus fin, plus coûteux). */
@@ -138,13 +139,8 @@ export class NeuralFieldLayer extends L.Layer {
 
     const { vmin, vmax } = this.options2;
     const span = vmax - vmin || 1;
-    const mask = this.options2.mask;
     const img = this.ctx.createImageData(cols, rows);
     for (let k = 0; k < temps.length; k++) {
-      if (!mask.isSea(lons[k], lats[k])) {
-        img.data[k * 4 + 3] = 0; // terre / hors emprise : transparent
-        continue;
-      }
       const t = (temps[k] - vmin) / span;
       const [r, g, b] = thermalColor(t);
       img.data[k * 4] = r;
@@ -153,14 +149,32 @@ export class NeuralFieldLayer extends L.Layer {
       img.data[k * 4 + 3] = 255;
     }
 
-    // Dessine la grille basse résolution puis l'étire avec lissage.
+    // Grille basse résolution du champ, étirée avec lissage.
     this.low.width = cols;
     this.low.height = rows;
     this.low.getContext("2d")!.putImageData(img, 0, 0);
+
+    const emp = this.options2.emprise;
+    const tl = map.latLngToContainerPoint([emp.latMax, emp.lonMin]);
+    const br = map.latLngToContainerPoint([emp.latMin, emp.lonMax]);
+
     this.ctx.clearRect(0, 0, size.x, size.y);
+    this.ctx.save();
+    // Clip au rectangle d'emprise du modèle (pas de champ hors domaine).
+    this.ctx.beginPath();
+    this.ctx.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+    this.ctx.clip();
     this.ctx.imageSmoothingEnabled = true;
     this.ctx.imageSmoothingQuality = "high";
     this.ctx.drawImage(this.low, 0, 0, cols, rows, 0, 0, size.x, size.y);
+    // Efface la terre le long des côtes réelles (trait net).
+    this.ctx.globalCompositeOperation = "destination-out";
+    this.options2.coast.buildLandPath(this.ctx, (lon, lat) =>
+      map.latLngToContainerPoint([lat, lon]),
+    );
+    this.ctx.fill();
+    this.ctx.globalCompositeOperation = "source-over";
+    this.ctx.restore();
 
     this.rendering = false;
     if (this.pending) {

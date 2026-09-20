@@ -8,3 +8,7 @@ run = "uv run python TP2/train_temperature_mlp.py"
 [tasks.tp2_train_fourier]
 description = "Entraîne le MLP + Fourier features et exporte le modèle ONNX (TP2)"
 run = "uv run python TP2/train_temperature_mlp.py --fourier"
+
+[tasks.tp2_coastline]
+description = "Génère le trait de côte Natural Earth recadré (TP2/model/land.geojson)"
+run = "uv run python TP2/build_coastline.py"

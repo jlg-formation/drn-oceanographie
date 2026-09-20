@@ -91,45 +91,6 @@ def normaliser_cibles(cibles: np.ndarray, norm: dict[str, float]) -> np.ndarray:
     return (cibles - norm["temp_mean"]) / norm["temp_std"]
 
 
-def exporter_masque(nc_file: Path, mask_path: Path) -> dict[str, float]:
-    """Écrit un masque mer/terre (PNG) et renvoie l'emprise complète de la grille.
-
-    Le PNG est orienté comme une image standard : ligne 0 = nord (latitude max),
-    colonne 0 = ouest (longitude min). Pixel 255 = mer, 0 = terre.
-    """
-    from PIL import Image
-
-    with xr.open_dataset(nc_file) as ds:
-        champ = ds[VARIABLE].isel(time=TIME_INDEX, depth=0)
-        lon = np.asarray(ds["lon"].values, dtype="float64")
-        lat = np.asarray(ds["lat"].values, dtype="float64")
-        temp = np.asarray(champ.values, dtype="float64")
-
-    lon2d = np.broadcast_to(lon, temp.shape)
-    lat2d = np.broadcast_to(lat, temp.shape)
-    mer = np.isfinite(temp)
-
-    # Oriente l'image : colonne 0 = ouest, ligne 0 = nord.
-    if lon2d[0, 0] > lon2d[0, -1]:
-        mer = mer[:, ::-1]
-    if lat2d[0, 0] < lat2d[-1, 0]:
-        mer = mer[::-1, :]
-
-    image = Image.fromarray((mer.astype("uint8") * 255), mode="L")
-    image.save(mask_path)
-    print(f"Masque mer/terre écrit : {mask_path}")
-
-    ny, nx = temp.shape
-    return {
-        "grid_lon_min": float(lon2d.min()),
-        "grid_lon_max": float(lon2d.max()),
-        "grid_lat_min": float(lat2d.min()),
-        "grid_lat_max": float(lat2d.max()),
-        "grid_nx": int(nx),
-        "grid_ny": int(ny),
-    }
-
-
 class FourierFeatures(nn.Module):
     """Encodage de Fourier aléatoire des coordonnées (optionnel).
 
@@ -344,8 +305,6 @@ def main() -> None:
     exporter_onnx(modele, onnx_path, device)
     verifier_onnx(modele, onnx_path, x_val, device)
 
-    grille = exporter_masque(NC_FILE, MODEL_DIR / "sea_mask.png")
-
     metadata = {
         "variable": VARIABLE,
         "time_index": TIME_INDEX,
@@ -353,8 +312,6 @@ def main() -> None:
         "output_name": VARIABLE,
         "output_unit": "degC",
         "normalization": norm,
-        "grid": grille,
-        "sea_mask": "sea_mask.png",
         "fourier": args.fourier,
         "onnx_opset": ONNX_OPSET,
         "description": (

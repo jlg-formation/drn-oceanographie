@@ -4,7 +4,7 @@ import "./style.css";
 
 import { TemperatureModel } from "./inference";
 import { NeuralFieldLayer } from "./field-layer";
-import { SeaMask } from "./sea-mask";
+import { Coastline, type Emprise } from "./coastline";
 import { cssGradient } from "./colormap";
 
 const MODELS = {
@@ -32,8 +32,11 @@ const map = L.map("map", {
   zoom: 6,
   minZoom: 5,
   maxZoom: 11,
-  zoomControl: true,
+  zoomControl: false,
 });
+
+// Le panneau occupe le coin haut-gauche : on place le zoom en haut-droite.
+L.control.zoom({ position: "topright" }).addTo(map);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution:
@@ -65,11 +68,25 @@ async function main(): Promise<void> {
   const vmax = model.meta.normalization.temp_max;
   buildLegend(vmin, vmax);
 
-  const mask = await SeaMask.load(`/${model.meta.sea_mask}`, model.meta.grid);
+  const n = model.meta.normalization;
+  const emprise: Emprise = {
+    lonMin: n.lon_min,
+    lonMax: n.lon_max,
+    latMin: n.lat_min,
+    latMax: n.lat_max,
+  };
+  const coast = await Coastline.load("/land.geojson");
+
+  const inEmprise = (lon: number, lat: number): boolean =>
+    lon >= emprise.lonMin &&
+    lon <= emprise.lonMax &&
+    lat >= emprise.latMin &&
+    lat <= emprise.latMax;
 
   const field = new NeuralFieldLayer({
     model,
-    mask,
+    coast,
+    emprise,
     vmin,
     vmax,
     step: 8,
@@ -104,7 +121,7 @@ async function main(): Promise<void> {
     requestAnimationFrame(async () => {
       probeScheduled = false;
       if (!lastLatLng) return;
-      if (!mask.isSea(lastLatLng.lng, lastLatLng.lat)) {
+      if (!inEmprise(lastLatLng.lng, lastLatLng.lat) || coast.isLand(lastLatLng.lng, lastLatLng.lat)) {
         probeEl.textContent = "Hors mer (pas de donnée)";
         return;
       }
