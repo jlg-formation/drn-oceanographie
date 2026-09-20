@@ -65,12 +65,16 @@ Le participant complète également un test de positionnement en amont et en ava
 
 ## Chapitre 3 : Outils usuels machine learning et deep learning
 
-- Outils de gestion de donnée : Apache Spark, Apache Hadoop.
-- Outils machine learning usuel : Numpy, Scipy, Sci-kit.
-- Frameworks DL haut niveau : PyTorch, Keras, Lasagne.
-- Frameworks DL bas niveau : Theano, Torch, Caffe, Tensorflow.
+- Calcul scientifique : NumPy, SciPy.
+- Manipulation de données : pandas, Polars.
+- Données scientifiques multidimensionnelles : xarray, NetCDF4, HDF5.
+- Machine learning : scikit-learn.
+- Deep learning : PyTorch, TensorFlow/Keras, JAX.
+- Traitement de données volumineuses : Dask, Apache Spark.
+- Visualisation : Matplotlib, Plotly.
+- Écosystème et modèles pré-entraînés : Hugging Face.
 
-**Travaux pratiques** : Comparer l'usage de ces outils sur un petit pipeline de préparation et d'analyse de données océanographiques multi-sources.
+**Travaux pratiques** : Construire et comparer un petit pipeline de préparation et d'analyse de données océanographiques multi-sources : chargement de données NetCDF, manipulation avec xarray et NumPy, préparation des données, analyse avec scikit-learn ou PyTorch et visualisation des résultats.
 
 ## Chapitre 4 : Convolutional Neural Networks (CNN)
 
