@@ -29,6 +29,17 @@ HYDRODYN-SURF _ HYCOM3D-SURF _ R1000_MANGASC _ 20260911
   entre la France et l'Espagne, plus l'entrée de la Manche).
 - **20260911** : la journée décrite, le **11 septembre 2026**.
 
+### Où l'a-t-on téléchargé ?
+
+Le fichier provient du **portail de téléchargement data.shom.fr**. L'URL exacte
+de l'archive est :
+
+```
+https://services.data.shom.fr/telechargement/oceano/HYDRODYN-SURF_HYCOM3D-SURF_R1000_MANGASC_20260911.dl/file/HYDRODYN-SURF_HYCOM3D-SURF_R1000_MANGASC_20260911.dl.zip
+```
+
+C'est un lien direct vers l'archive `.zip` décrite ci-dessous.
+
 ---
 
 ## 2. Que contenait l'archive `.zip` ?
