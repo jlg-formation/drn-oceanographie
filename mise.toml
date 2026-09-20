@@ -1,5 +1,18 @@
 [tools]
 uv = "0.12.16"
+bun = "1.4.2"
+
+[tasks.prepare]
+description = "Reconstruit l'environnement après un `git clean` : .venv (Python) et node_modules (front-end)"
+depends = ["prepare_python", "prepare_front"]
+
+[tasks.prepare_python]
+description = "Installe les dépendances Python dans .venv (uv sync)"
+run = "uv sync"
+
+[tasks.prepare_front]
+description = "Installe les dépendances front-end dans node_modules (bun install)"
+run = "bun install"
 
 [tasks.tp2_train]
 description = "Entraîne le MLP de température et exporte le modèle ONNX (TP2)"
