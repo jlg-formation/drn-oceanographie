@@ -38,3 +38,18 @@ run = [
   "mise run tp2_04_coastline",
   "mise run tp2_05_web",
 ]
+
+[tasks.tp2b_01_train]
+description = "Entraîne le MDN de distribution (mélange de gaussiennes) et exporte l'ONNX (TP2b)"
+run = "uv run python TP2b/train_temperature_mdn.py"
+
+[tasks.tp2b_02_web]
+description = "Lance le site web du TP2b (serveur de dev Vite sur http://localhost:5174)"
+run = "bun run dev:tp2b"
+
+[tasks.tp2b]
+description = "Workflow TP2b complet : train -> web"
+run = [
+  "mise run tp2b_01_train",
+  "mise run tp2b_02_web",
+]

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Distribution neuronale — Température de surface</title>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="panel">
+        <h1>Distribution neuronale</h1>
+        <p class="subtitle">
+          Un réseau à densité de mélange (<em>MDN</em>) a appris la <em>loi</em>
+          p(T) des températures de surface du Golfe de Gascogne. La courbe est
+          <em>générée en direct</em> dans le navigateur (ONNX) et comparée à
+          l'histogramme réel des mesures.
+        </p>
+
+        <div id="metrics" class="metrics"></div>
+
+        <div class="controls">
+          <label class="control">
+            <span>Échantillons</span>
+            <input id="sample-count" type="number" min="100" step="500" value="5000" />
+          </label>
+          <div class="buttons">
+            <button id="sample-btn" type="button">Rééchantillonner</button>
+            <button id="clear-btn" type="button" class="ghost">Effacer</button>
+          </div>
+        </div>
+
+        <div id="status" class="status">Chargement du modèle…</div>
+      </section>
+
+      <section class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "variable": "temperature",
+  "time_index": 0,
+  "input_name": "temperature",
+  "input_unit": "degC",
+  "output_name": "density",
+  "num_components": 6,
+  "normalization": {
+    "temp_mean": 19.40389255717354,
+    "temp_std": 1.6090572070201359,
+    "temp_min": 14.006692886352539,
+    "temp_max": 23.031147003173828
+  },
+  "mixture_phys_space": {
+    "weights": [
+      0.12926256656646729,
+      0.15835654735565186,
+      0.24545088410377502,
+      0.19884544610977173,
+      0.1587546318769455,
+      0.10932987183332443
+    ],
+    "means": [
+      17.570926666259766,
+      18.742429733276367,
+      18.131425857543945,
+      20.167531967163086,
+      20.800939559936523,
+      21.968839645385742
+    ],
+    "scales": [
+      0.48215073347091675,
+      0.379890114068985,
+      1.2553712129592896,
+      0.5463352203369141,
+      0.32736071944236755,
+      0.45044630765914917
+    ]
+  },
+  "metrics": {
+    "val_nll_phys": 1.8379560808353723,
+    "kl_hist_modele": 0.011003884345469797,
+    "wasserstein1": 0.013771522191176177
+  },
+  "onnx_opset": 18,
+  "description": "Le modèle ONNX prend une température (°C) en entrée et renvoie la densité de probabilité p(T). Les paramètres du mélange (espace physique) sont aussi fournis pour échantillonner ou tracer la courbe côté client."
+}
