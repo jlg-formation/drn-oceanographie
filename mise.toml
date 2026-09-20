@@ -1,2 +1,10 @@
 [tools]
 uv = "0.12.16"
+
+[tasks.tp2_train]
+description = "Entraîne le MLP de température et exporte le modèle ONNX (TP2)"
+run = "uv run python TP2/train_temperature_mlp.py"
+
+[tasks.tp2_train_fourier]
+description = "Entraîne le MLP + Fourier features et exporte le modèle ONNX (TP2)"
+run = "uv run python TP2/train_temperature_mlp.py --fourier"

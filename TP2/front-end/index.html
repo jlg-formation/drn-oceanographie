@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Océan neuronal — Golfe de Gascogne</title>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <div id="panel" class="panel">
+      <h1>Océan neuronal</h1>
+      <p class="subtitle">
+        Le champ de température de surface est <em>généré en direct</em> dans
+        votre navigateur par un réseau de neurones (ONNX), à partir des seules
+        coordonnées de chaque pixel.
+      </p>
+
+      <label class="control">
+        <span>Modèle</span>
+        <select id="model-select">
+          <option value="fourier">MLP + Fourier (net)</option>
+          <option value="brut">MLP brut (lisse)</option>
+        </select>
+      </label>
+
+      <label class="control">
+        <span>Opacité</span>
+        <input id="opacity" type="range" min="0" max="1" step="0.05" value="0.8" />
+      </label>
+
+      <div id="legend" class="legend"></div>
+      <div id="probe" class="probe">Survolez la carte…</div>
+      <div id="status" class="status">Chargement du modèle…</div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -6,5 +6,28 @@ dist/
 wheels/
 *.egg-info
 
+# Node / front-end
+node_modules/
+TP2/front-end/dist/
+
+# Artefacts de modèle générés (recréés par `mise run tp2_train*`)
+TP2/model/
+
 # Virtual environments
 .venv
+
+# Données océanographiques téléchargées (fichiers lourds)
+TP2/data/
+*.nc
+*.nc.gz
+*.zip
+*.gz
+
+# Éditeurs / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Notebooks
+.ipynb_checkpoints/
