@@ -14,7 +14,10 @@
     "preview:tp3": "vite preview --config vite.tp3.config.ts",
     "dev:tp4": "vite --config vite.tp4.config.ts",
     "build:tp4": "vite build --config vite.tp4.config.ts",
-    "preview:tp4": "vite preview --config vite.tp4.config.ts"
+    "preview:tp4": "vite preview --config vite.tp4.config.ts",
+    "dev:tp5": "vite --config vite.tp5.config.ts",
+    "build:tp5": "vite build --config vite.tp5.config.ts",
+    "preview:tp5": "vite preview --config vite.tp5.config.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

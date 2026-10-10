@@ -14,6 +14,7 @@ dist/
 TP2/front-end/dist/
 TP3/front-end/dist/
 TP4/front-end/dist/
+TP5/front-end/dist/
 *.tsbuildinfo
 .vite/
 
@@ -26,11 +27,16 @@ TP3/output/
 TP4/model/
 # Checkpoints, historiques, évaluations : `mise run tp4_03_train` / `tp4_04_evaluate`
 TP4/runs/
+# Modèles ONNX, série et métadonnées du site : `mise run tp5_05_export`
+TP5/model/
+# Checkpoints, historiques, évaluation : `mise run tp5_03_train` / `tp5_04_evaluate`
+TP5/runs/
 
 # ---- Données océanographiques téléchargées (fichiers lourds) ----
 TP2/data/
 TP3/data/
 TP4/data/
+TP5/data/
 *.nc
 *.nc.gz
 *.zip

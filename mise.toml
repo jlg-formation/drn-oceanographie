@@ -122,3 +122,47 @@ run = [
   "mise run tp4_06_test",
   "mise run tp4_07_web",
 ]
+
+[tasks.tp5_01_download]
+description = "Télécharge 5 ans de hauteurs horaires validées du marégraphe de Brest (API REFMAR, TP5)"
+run = "uv run python TP5/download_data.py"
+
+[tasks.tp5_02_prepare]
+description = "Contrôle qualité, figures exploratoires, fenêtres 48 h -> 24 h et séparation chronologique (TP5)"
+run = "uv run python TP5/prepare_dataset.py"
+
+[tasks.tp5_03_train]
+description = "Entraîne RNN, GRU et LSTM sur les mêmes fenêtres (TP5, GPU si disponible)"
+run = "uv run python TP5/train.py"
+
+[tasks.tp5_03_train_cpu]
+description = "Entraînement réduit pour machine sans GPU (TP5, NF02)"
+run = "uv run python TP5/train.py --rapide --cpu"
+
+[tasks.tp5_04_evaluate]
+description = "Évalue réseaux et références naïves sur le jeu de test, par échéance (TP5)"
+run = "uv run python TP5/evaluate.py"
+
+[tasks.tp5_05_export]
+description = "Exporte les trois réseaux en ONNX, les vérifie et écrit les données du site (TP5/model)"
+run = "uv run python TP5/export_onnx.py"
+
+[tasks.tp5_06_test]
+description = "Tests unitaires et de données (TP5)"
+run = "uv run pytest TP5/tests -v"
+
+[tasks.tp5_07_web]
+description = "Lance MaréeLab (serveur de dev Vite sur http://localhost:5177)"
+run = "bun run dev:tp5"
+
+[tasks.tp5]
+description = "Workflow TP5 complet : download -> prepare -> train -> evaluate -> export -> test -> web"
+run = [
+  "mise run tp5_01_download",
+  "mise run tp5_02_prepare",
+  "mise run tp5_03_train",
+  "mise run tp5_04_evaluate",
+  "mise run tp5_05_export",
+  "mise run tp5_06_test",
+  "mise run tp5_07_web",
+]

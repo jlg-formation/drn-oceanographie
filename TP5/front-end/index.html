@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MaréeLab</title>
+  </head>
+  <body>
+    <header class="header">
+      <div>
+        <h1>MaréeLab</h1>
+        <p class="subtitle">
+          Laboratoire de prévision des marées à <strong>Brest</strong> : trois réseaux récurrents
+          (<strong>RNN</strong>, <strong>GRU</strong>, <strong>LSTM</strong>) lisent les
+          <strong>48 dernières heures</strong> de hauteur d'eau et prévoient les
+          <strong>24 suivantes</strong>. Les modèles tournent dans votre navigateur.
+        </p>
+      </div>
+      <p class="badge" role="note">
+        <strong>Prévisions expérimentales</strong> à but pédagogique — ce n'est pas un outil officiel
+        de prédiction des marées du SHOM.
+      </p>
+    </header>
+
+    <main class="layout">
+      <!-- ============ Colonne de gauche : période, modèles, actions ============ -->
+      <aside class="sidebar">
+        <section class="card">
+          <h2><span class="step">1</span>Choisir une période</h2>
+          <label class="switch">
+            <input id="test-only" type="checkbox" checked />
+            <span>Jeu de test uniquement <small>(données jamais vues à l'entraînement)</small></span>
+          </label>
+          <label class="field">
+            <span>Instant de prévision H <small>(dernière heure observée, UTC)</small></span>
+            <input id="date" type="datetime-local" step="3600" />
+          </label>
+          <div class="nav" role="group" aria-label="Déplacer l'instant de prévision">
+            <button type="button" data-pas="-24" title="Un jour plus tôt">−1 j</button>
+            <button type="button" data-pas="-1" title="Une heure plus tôt">−1 h</button>
+            <button type="button" data-pas="1" title="Une heure plus tard">+1 h</button>
+            <button type="button" data-pas="24" title="Un jour plus tard">+1 j</button>
+            <button id="hasard" type="button" title="Une période valide au hasard">Au hasard</button>
+          </div>
+          <div id="periode-msg" class="message" role="status" aria-live="polite"></div>
+          <h3>Périodes remarquables du jeu de test</h3>
+          <div id="exemples" class="exemples"></div>
+        </section>
+
+        <section class="card">
+          <h2><span class="step">2</span>Choisir les modèles</h2>
+          <fieldset class="choix">
+            <legend>Réseaux récurrents</legend>
+            <div id="choix-modeles"></div>
+          </fieldset>
+          <fieldset class="choix">
+            <legend>Références naïves</legend>
+            <div id="choix-references"></div>
+          </fieldset>
+        </section>
+
+        <section class="card">
+          <h2><span class="step">3</span>Prévoir puis comparer</h2>
+          <button id="predire" class="primary" type="button" disabled>Prédire les prochaines 24 heures</button>
+          <button id="reveler" class="secondary" type="button" disabled>Révéler la réalité</button>
+          <div id="status" class="status" role="status" aria-live="polite">Chargement des données…</div>
+        </section>
+      </aside>
+
+      <!-- ============ Zone principale : graphique ============ -->
+      <section class="viewer card">
+        <div id="legende" class="legende" aria-label="Légende des courbes"></div>
+        <div class="chart-wrap">
+          <canvas id="graphique" aria-label="Graphique des hauteurs d'eau observées et prévues"></canvas>
+          <div id="placeholder" class="placeholder">Chargement…</div>
+        </div>
+        <div class="toolbar">
+          <div class="anim" role="group" aria-label="Lecture animée des prévisions">
+            <button id="lecture" type="button" disabled>▶ Lecture</button>
+            <button id="pause" type="button" disabled>⏸ Pause</button>
+            <button id="recommencer" type="button" disabled>⟲ Recommencer</button>
+            <label class="vitesse">
+              <span>Vitesse</span>
+              <input id="vitesse" type="range" min="1" max="12" step="1" value="4" />
+              <output id="vitesse-val">4 h/s</output>
+            </label>
+            <span id="anim-pas" class="anim-pas"></span>
+          </div>
+          <div class="downloads">
+            <button id="dl-png" type="button" disabled>PNG</button>
+            <button id="dl-csv" type="button" disabled>CSV</button>
+            <button id="dl-json" type="button" disabled>JSON</button>
+          </div>
+        </div>
+        <div class="frise-wrap">
+          <div class="frise-titre">
+            <span id="frise-label">Jeu de test — cliquez pour choisir une période</span>
+            <span class="frise-legende">
+              <i class="sw train"></i>entraînement <i class="sw val"></i>validation
+              <i class="sw test"></i>test <i class="sw lacune"></i>lacune
+            </span>
+          </div>
+          <canvas id="frise" aria-label="Frise de la série : cliquez pour choisir l'instant de prévision"></canvas>
+        </div>
+        <div id="avert-periode" class="avert" hidden></div>
+      </section>
+
+      <!-- ============ Erreurs sur la période (F23) ============ -->
+      <section id="resultats" class="card resultats">
+        <h2>Erreurs sur cette période</h2>
+        <div id="resultats-contenu" class="note">
+          Lancez une prévision, puis révélez la réalité pour calculer les erreurs.
+        </div>
+      </section>
+
+      <!-- ============ Comparaison sur tout le jeu de test (F13, F14, F10) ============ -->
+      <section class="card global">
+        <h2>Sur tout le jeu de test</h2>
+        <p id="global-intro" class="note"></p>
+        <div class="table-scroll"><table id="table-globale" class="table"></table></div>
+        <div class="mini-charts">
+          <canvas id="chart-horizon"></canvas>
+          <canvas id="chart-apprentissage"></canvas>
+        </div>
+      </section>
+
+      <!-- ============ Explications pédagogiques (F26) ============ -->
+      <section class="card learn">
+        <h2>Comprendre</h2>
+        <div class="learn-grid">
+          <details open>
+            <summary>Le principe d'un RNN</summary>
+            <p>
+              Un réseau récurrent lit la série <strong>une heure après l'autre</strong>. À chaque pas,
+              il combine la nouvelle hauteur et son <em>état caché</em>, un petit vecteur qui résume
+              ce qu'il a vu jusque-là : h<sub>t</sub> = tanh(W·x<sub>t</sub> + U·h<sub>t−1</sub> + b).
+              Après les 48 heures, l'état caché final sert à prévoir. Les mêmes poids sont réutilisés à
+              chaque pas. Sur de longues séquences, le gradient a du mal à remonter loin dans le
+              temps : le RNN simple oublie vite.
+            </p>
+          </details>
+          <details open>
+            <summary>Le rôle des portes d'un GRU</summary>
+            <p>
+              Le GRU ajoute deux <strong>portes</strong>, des valeurs entre 0 et 1 apprises.
+              La <em>porte de mise à jour</em> décide quelle part de l'ancien état garder et quelle
+              part remplacer. La <em>porte de réinitialisation</em> décide quelle part du passé
+              utiliser pour calculer la nouvelle proposition. Le réseau peut ainsi conserver une
+              information sur de nombreux pas.
+            </p>
+          </details>
+          <details open>
+            <summary>La mémoire d'un LSTM</summary>
+            <p>
+              Le LSTM sépare la <strong>mémoire à long terme</strong> (la <em>cellule</em> c<sub>t</sub>)
+              de la sortie à court terme (h<sub>t</sub>). Trois portes la pilotent : <em>oubli</em>
+              (effacer), <em>entrée</em> (écrire) et <em>sortie</em> (lire). La cellule est mise à
+              jour par addition, ce qui laisse passer le gradient sur de longues durées.
+            </p>
+          </details>
+          <details>
+            <summary>Apprentissage et inférence</summary>
+            <p>
+              <strong>L'apprentissage</strong> a eu lieu une fois, en Python avec PyTorch, sur 2021 → mi-2024 :
+              les poids ont été ajustés pour réduire l'erreur. <strong>L'inférence</strong>, ici,
+              applique ces poids figés à 48 nouvelles valeurs. Elle prend quelques millisecondes dans
+              votre navigateur (ONNX Runtime Web) et ne modifie jamais le modèle.
+            </p>
+          </details>
+          <details>
+            <summary>Une prévision à horizon multiple</summary>
+            <p>
+              Le réseau ne prévoit pas H+1, puis H+2 à partir de H+1, etc. Sa dernière couche sort
+              <strong>directement les 24 valeurs</strong> H+1 … H+24. Les erreurs ne se cumulent donc
+              pas d'une heure sur l'autre. L'erreur augmente quand même avec l'échéance : voir le
+              graphique « MAE selon l'échéance ».
+            </p>
+          </details>
+          <details>
+            <summary>Pourquoi des références naïves&nbsp;?</summary>
+            <p>
+              Une erreur de 6 cm est-elle bonne ? Pour le savoir, on compare à des méthodes sans
+              apprentissage. La <em>persistance</em> répète la dernière hauteur. La <em>répétition à
+              24 h</em> recopie la veille. La <em>répétition à 25 h</em> recopie la veille décalée d'un
+              « jour lunaire » (≈ 24 h 50 min, deux marées semi-diurnes) et elle est bien meilleure.
+              Un réseau utile doit battre ces références.
+            </p>
+          </details>
+          <details>
+            <summary>Limites</summary>
+            <p>
+              Les modèles ne voient que 48 h de hauteurs, sans météo : une surcote due à une tempête
+              n'est anticipée que si elle est déjà visible dans l'historique. Ils n'ont appris que
+              Brest, de 2021 à mi-2024. Un classement obtenu sur <em>une</em> période ne prouve rien
+              en général. Seule la comparaison sur tout le jeu de test a un sens statistique. Pour
+              la navigation, utilisez les prédictions officielles du SHOM.
+            </p>
+          </details>
+        </div>
+        <p id="model-info" class="note"></p>
+        <p id="sources" class="note sources"></p>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
