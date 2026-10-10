@@ -11,7 +11,10 @@
     "preview:tp2b": "vite preview --config vite.tp2b.config.ts",
     "dev:tp3": "vite --config vite.tp3.config.ts",
     "build:tp3": "vite build --config vite.tp3.config.ts",
-    "preview:tp3": "vite preview --config vite.tp3.config.ts"
+    "preview:tp3": "vite preview --config vite.tp3.config.ts",
+    "dev:tp4": "vite --config vite.tp4.config.ts",
+    "build:tp4": "vite build --config vite.tp4.config.ts",
+    "preview:tp4": "vite preview --config vite.tp4.config.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

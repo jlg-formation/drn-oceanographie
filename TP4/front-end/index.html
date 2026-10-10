@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terre ou Mer ?</title>
+  </head>
+  <body>
+    <header class="header">
+      <div>
+        <h1>Terre ou Mer&nbsp;?</h1>
+        <p class="subtitle">
+          Un réseau de neurones convolutif (U-Net) décide, <strong>pour chaque pixel</strong>
+          d'une image satellite, s'il appartient à la terre ou à la mer. Tout est calculé
+          dans votre navigateur : aucune image n'est envoyée à un serveur.
+        </p>
+      </div>
+      <div class="chips" aria-label="Légende">
+        <span class="chip"><i class="swatch terre"></i>Terre</span>
+        <span class="chip"><i class="swatch mer"></i>Mer</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- ============ Colonne de gauche : image, analyse, résultats ============ -->
+      <aside class="sidebar">
+        <section class="card">
+          <h2><span class="step">1</span>Choisir une image</h2>
+          <div id="gallery" class="gallery" role="list"></div>
+          <label id="dropzone" class="dropzone" tabindex="0">
+            <input id="file-input" type="file" accept="image/png,image/jpeg" hidden />
+            <strong>Importer une image</strong>
+            <span>Glissez-déposez un fichier PNG ou JPEG, ou cliquez ici.</span>
+            <span id="limits" class="limits"></span>
+          </label>
+          <p class="warning">
+            Le modèle a appris sur des images satellites Sentinel-2 en couleurs naturelles
+            (~10 m/pixel). Une photo ordinaire ou une image très retouchée donnera des
+            résultats peu fiables.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2><span class="step">2</span>Analyser</h2>
+          <button id="analyze" class="primary" type="button" disabled>Analyser l'image</button>
+          <div id="progress" class="progress" hidden><div class="progress-bar"></div></div>
+          <div id="status" class="status" role="status" aria-live="polite">Chargement du modèle…</div>
+        </section>
+
+        <section id="results" class="card" hidden>
+          <h2><span class="step">3</span>Résultats</h2>
+          <div class="split-bar" aria-hidden="true">
+            <div id="bar-terre" class="bar-terre"></div>
+          </div>
+          <dl class="stats">
+            <div><dt><i class="swatch terre"></i>Terre</dt><dd id="stat-terre">–</dd></div>
+            <div><dt><i class="swatch mer"></i>Mer</dt><dd id="stat-mer">–</dd></div>
+            <div><dt>Pixels incertains</dt><dd id="stat-incertain">–</dd></div>
+            <div><dt>Durée d'inférence</dt><dd id="stat-duree">–</dd></div>
+            <div><dt>Image</dt><dd id="stat-taille">–</dd></div>
+          </dl>
+          <p class="note">
+            Répartition des <em>pixels</em> de l'image, pas des surfaces géographiques réelles.
+          </p>
+          <div class="downloads">
+            <button id="dl-mask" type="button">Télécharger le masque</button>
+            <button id="dl-overlay" type="button">Télécharger la superposition</button>
+          </div>
+        </section>
+      </aside>
+
+      <!-- ============ Zone principale : visualisation ============ -->
+      <section class="viewer card">
+        <div class="toolbar">
+          <div id="modes" class="modes" role="tablist" aria-label="Mode d'affichage">
+            <button type="button" role="tab" data-mode="comparateur">Avant / après</button>
+            <button type="button" role="tab" data-mode="original">Image originale</button>
+            <button type="button" role="tab" data-mode="segmentation">Segmentation</button>
+            <button type="button" role="tab" data-mode="superposition">Superposition</button>
+            <button type="button" role="tab" data-mode="incertitude">Incertitude</button>
+          </div>
+          <label class="opacity">
+            <span>Opacité du masque</span>
+            <input id="opacity" type="range" min="0" max="1" step="0.01" value="0.55" />
+          </label>
+        </div>
+
+        <div id="stage-wrap" class="stage-wrap">
+          <div id="stage" class="stage mode-original">
+            <canvas id="cv-image"></canvas>
+            <canvas id="cv-mask"></canvas>
+            <canvas id="cv-uncert"></canvas>
+            <div id="handle" class="handle" tabindex="0" role="slider"
+                 aria-label="Curseur de comparaison" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+              <span class="grip">⟷</span>
+            </div>
+            <span class="tag tag-left">Image originale</span>
+            <span class="tag tag-right">Segmentation prédite</span>
+          </div>
+          <div id="placeholder" class="placeholder">
+            Choisissez une image d'exemple ou importez la vôtre pour commencer.
+          </div>
+        </div>
+        <p id="mode-help" class="mode-help"></p>
+        <p class="disclaimer">
+          ⚠ Ceci est une <strong>prédiction</strong> du modèle, pas une vérité terrain.
+        </p>
+      </section>
+
+      <!-- ============ Carte (exemples géoréférencés, F26) ============ -->
+      <section id="map-card" class="card map-card" hidden>
+        <h2>Localisation</h2>
+        <div id="map"></div>
+        <p class="note" id="map-note"></p>
+      </section>
+
+      <!-- ============ Explications pédagogiques ============ -->
+      <section class="card learn">
+        <h2>Comprendre</h2>
+        <div class="learn-grid">
+          <details open>
+            <summary>Qu'est-ce qu'une segmentation sémantique&nbsp;?</summary>
+            <p>
+              Classer une image entière (« c'est une côte ») ne suffit pas : ici, le modèle
+              attribue une classe à <strong>chaque pixel</strong>. Le résultat est un masque de
+              mêmes dimensions que l'image, où chaque pixel vaut « terre » ou « mer ».
+            </p>
+          </details>
+          <details open>
+            <summary>Deux classes seulement</summary>
+            <p>
+              <b class="txt-terre">Terre</b> : tout ce qui est émergé (champs, villes, plages,
+              rochers…). <b class="txt-mer">Mer</b> : les surfaces maritimes. Le modèle ne
+              reconnaît ni les navires, ni les bâtiments, ni les fonds marins.
+            </p>
+          </details>
+          <details>
+            <summary>Le rôle du CNN (U-Net)</summary>
+            <p>
+              Un réseau convolutif applique des filtres appris qui détectent textures, couleurs
+              et formes. Le U-Net réduit d'abord l'image pour comprendre le contexte (une baie,
+              un estuaire), puis la ré-agrandit pour placer précisément le trait de côte. Les
+              grandes images sont découpées en fenêtres de 256 × 256 pixels qui se
+              chevauchent, puis recollées.
+            </p>
+          </details>
+          <details>
+            <summary>Pourquoi certaines prédictions sont fausses</summary>
+            <p>
+              Marées et estran (zones découvertes à marée basse), eaux turbides ou très
+              sombres, ombres de relief, nuages, ports et digues, images d'un autre capteur ou
+              d'une autre saison… Les « vérités » d'apprentissage viennent elles-mêmes d'une
+              carte (OpenStreetMap) qui ne coïncide jamais parfaitement avec l'image. Le mode
+              <em>Incertitude</em> montre les pixels où le modèle hésite (probabilité proche
+              de 50 %) — une probabilité élevée n'est pas pour autant une garantie de justesse.
+            </p>
+          </details>
+        </div>
+        <p id="model-info" class="note"></p>
+        <p id="sources" class="note sources"></p>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

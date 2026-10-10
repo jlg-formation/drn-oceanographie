@@ -78,3 +78,47 @@ run = [
   "mise run tp3_03_test",
   "mise run tp3_04_web",
 ]
+
+[tasks.tp4_01_download]
+description = "Télécharge les polygones terrestres OSM et les tuiles Sentinel-2, assemble les scènes (TP4)"
+run = "uv run python TP4/download_data.py"
+
+[tasks.tp4_02_dataset]
+description = "Génère masques terre/mer, contrôles visuels, patches train/val/test et exemples web (TP4)"
+run = "uv run python TP4/prepare_dataset.py"
+
+[tasks.tp4_03_train]
+description = "Entraîne le U-Net de segmentation terre/mer (TP4, GPU si disponible)"
+run = "uv run python TP4/train_unet.py"
+
+[tasks.tp4_03_train_cpu]
+description = "Entraînement réduit pour machine sans GPU (TP4, NF02)"
+run = "uv run python TP4/train_unet.py --rapide --cpu"
+
+[tasks.tp4_04_evaluate]
+description = "Évalue le U-Net sur les zones de test et les exemples, figures d'erreurs (TP4)"
+run = "uv run python TP4/evaluate.py"
+
+[tasks.tp4_05_export]
+description = "Exporte le U-Net en ONNX, le vérifie et écrit les métadonnées du site (TP4/model)"
+run = "uv run python TP4/export_onnx.py"
+
+[tasks.tp4_06_test]
+description = "Tests unitaires et de données (TP4)"
+run = "uv run pytest TP4/tests -v"
+
+[tasks.tp4_07_web]
+description = "Lance le site « Terre ou Mer ? » (serveur de dev Vite sur http://localhost:5176)"
+run = "bun run dev:tp4"
+
+[tasks.tp4]
+description = "Workflow TP4 complet : download -> dataset -> train -> evaluate -> export -> test -> web"
+run = [
+  "mise run tp4_01_download",
+  "mise run tp4_02_dataset",
+  "mise run tp4_03_train",
+  "mise run tp4_04_evaluate",
+  "mise run tp4_05_export",
+  "mise run tp4_06_test",
+  "mise run tp4_07_web",
+]

@@ -13,6 +13,7 @@ node_modules/
 dist/
 TP2/front-end/dist/
 TP3/front-end/dist/
+TP4/front-end/dist/
 *.tsbuildinfo
 .vite/
 
@@ -21,10 +22,15 @@ TP3/front-end/dist/
 TP2/model/
 # Exports bathymétriques (PNG, GeoJSON, grille) : `mise run tp3_02_prepare`
 TP3/output/
+# Modèle ONNX, métadonnées et exemples du site : `mise run tp4_02_dataset` / `tp4_05_export`
+TP4/model/
+# Checkpoints, historiques, évaluations : `mise run tp4_03_train` / `tp4_04_evaluate`
+TP4/runs/
 
 # ---- Données océanographiques téléchargées (fichiers lourds) ----
 TP2/data/
 TP3/data/
+TP4/data/
 *.nc
 *.nc.gz
 *.zip
