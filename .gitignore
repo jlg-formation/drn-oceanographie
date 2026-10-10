@@ -12,15 +12,19 @@ wheels/
 node_modules/
 dist/
 TP2/front-end/dist/
+TP3/front-end/dist/
 *.tsbuildinfo
 .vite/
 
 # ---- Artefacts générés (recréés par les tâches mise) ----
 # Modèles ONNX, métadonnées et trait de côte : `mise run tp2_02_train*` / `tp2_04_coastline`
 TP2/model/
+# Exports bathymétriques (PNG, GeoJSON, grille) : `mise run tp3_02_prepare`
+TP3/output/
 
 # ---- Données océanographiques téléchargées (fichiers lourds) ----
 TP2/data/
+TP3/data/
 *.nc
 *.nc.gz
 *.zip

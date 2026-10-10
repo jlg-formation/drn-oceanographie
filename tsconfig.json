@@ -16,7 +16,9 @@
   "include": [
     "TP2/front-end/src",
     "TP2b/front-end/src",
+    "TP3/front-end/src",
     "vite.config.ts",
-    "vite.tp2b.config.ts"
+    "vite.tp2b.config.ts",
+    "vite.tp3.config.ts"
   ]
 }

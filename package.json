@@ -8,7 +8,10 @@
     "preview": "vite preview",
     "dev:tp2b": "vite --config vite.tp2b.config.ts",
     "build:tp2b": "vite build --config vite.tp2b.config.ts",
-    "preview:tp2b": "vite preview --config vite.tp2b.config.ts"
+    "preview:tp2b": "vite preview --config vite.tp2b.config.ts",
+    "dev:tp3": "vite --config vite.tp3.config.ts",
+    "build:tp3": "vite build --config vite.tp3.config.ts",
+    "preview:tp3": "vite preview --config vite.tp3.config.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

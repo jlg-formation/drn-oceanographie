@@ -53,3 +53,28 @@ run = [
   "mise run tp2b_01_train",
   "mise run tp2b_02_web",
 ]
+
+[tasks.tp3_01_explore]
+description = "Télécharge (si besoin) et inspecte l'extrait NetCDF GEBCO (TP3)"
+run = "uv run python TP3/explore.py"
+
+[tasks.tp3_02_prepare]
+description = "Prépare raster Mercator, GeoJSON, grille F10, métadonnées et rapport (TP3/output)"
+run = "uv run python TP3/prepare_bathymetry.py"
+
+[tasks.tp3_03_test]
+description = "Tests de données et points de contrôle cartographiques (TP3)"
+run = "uv run pytest TP3/tests -v"
+
+[tasks.tp3_04_web]
+description = "Lance le site web du TP3 (serveur de dev Vite sur http://localhost:5175)"
+run = "bun run dev:tp3"
+
+[tasks.tp3]
+description = "Workflow TP3 complet : explore -> prepare -> test -> web"
+run = [
+  "mise run tp3_01_explore",
+  "mise run tp3_02_prepare",
+  "mise run tp3_03_test",
+  "mise run tp3_04_web",
+]

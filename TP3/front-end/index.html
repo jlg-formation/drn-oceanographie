@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bathymétrie — Golfe de Gascogne</title>
+  </head>
+  <body>
+    <div id="map" role="application" aria-label="Carte bathymétrique du golfe de Gascogne"></div>
+
+    <aside id="panel" class="panel" aria-label="Légende et informations">
+      <h1>Bathymétrie</h1>
+      <p class="subtitle">
+        Profondeurs du golfe de Gascogne issues de la grille
+        <strong>GEBCO</strong>, préparées en Python (xarray + NumPy). Choisissez
+        le mode d'affichage avec le contrôle en haut à droite.
+      </p>
+
+      <div class="legend" aria-label="Légende des profondeurs">
+        <div class="legend-title">Profondeur (m)</div>
+        <div class="legend-body">
+          <div id="legend-bar" class="legend-bar"></div>
+          <div id="legend-labels" class="legend-labels"></div>
+        </div>
+        <div id="legend-note" class="legend-note"></div>
+      </div>
+
+      <div id="status" class="status" role="status" aria-live="polite">Chargement des données…</div>
+    </aside>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
