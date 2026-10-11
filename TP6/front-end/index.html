@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ocean Terrain Lab</title>
+  </head>
+  <body>
+    <header class="header">
+      <div>
+        <h1>Ocean Terrain Lab</h1>
+        <p class="subtitle">
+          Deux modèles génératifs, un <strong>VAE</strong> et un <strong>GAN</strong>, ont appris la forme
+          de reliefs sous-marins réels (GEBCO). Ils inventent ici de nouvelles cartes de
+          <strong>64 × 64 pixels</strong> (≈ 118 km de côté), calculées dans votre navigateur.
+        </p>
+      </div>
+      <p class="badge" role="note">
+        <strong>Reliefs synthétiques</strong> à but pédagogique : ce ne sont ni des relevés réels, ni des
+        représentations géologiquement validées. Ne pas utiliser pour la navigation.
+      </p>
+    </header>
+
+    <nav class="barre" aria-label="Choix du modèle">
+      <div id="choix-modele" class="segmente" role="tablist">
+        <button type="button" role="tab" data-mode="vae"><i class="pastille vae"></i>VAE</button>
+        <button type="button" role="tab" data-mode="gan"><i class="pastille gan"></i>GAN</button>
+        <button type="button" role="tab" data-mode="comparaison">Comparaison VAE / GAN</button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite">Chargement des modèles…</div>
+    </nav>
+
+    <main>
+      <!-- =================== Espaces VAE / GAN =================== -->
+      <section id="espace-modele">
+        <div id="onglets" class="onglets" role="tablist" aria-label="Espace de travail">
+          <button type="button" role="tab" data-onglet="generation">1. Génération</button>
+          <button type="button" role="tab" data-onglet="latent">2. Espace latent</button>
+          <button type="button" role="tab" data-onglet="reconstruction">3. Reconstruction (VAE)</button>
+        </div>
+
+        <div class="layout">
+          <aside class="sidebar">
+            <!-- ---------- Génération (F28, F37) ---------- -->
+            <div data-panneau="generation">
+              <section class="card">
+                <h2>Générer un relief <span id="modele-actif" class="chip"></span></h2>
+                <label class="field">
+                  <span>Graine aléatoire <small>(même graine = même relief)</small></span>
+                  <input id="graine" type="number" min="0" max="999999999" step="1" value="0" />
+                </label>
+                <button id="generer" class="primary" type="button" disabled>Générer un relief</button>
+                <button id="regenerer" class="secondary" type="button" disabled>Regénérer avec cette graine</button>
+                <p class="note">
+                  La graine fixe le vecteur latent z ~ N(0, I). « Générer un relief » tire une nouvelle graine.
+                </p>
+              </section>
+              <section class="card">
+                <h2>Galerie de générations</h2>
+                <div class="ligne">
+                  <label class="field compact">
+                    <span>Nombre</span>
+                    <select id="galerie-n">
+                      <option value="8">8</option>
+                      <option value="12" selected>12</option>
+                      <option value="24">24</option>
+                    </select>
+                  </label>
+                  <button id="galerie-btn" type="button" disabled>Générer une galerie</button>
+                </div>
+                <div id="galerie" class="vignettes" role="list"></div>
+                <p class="note">Cliquez une vignette pour l'examiner en détail. Graines consécutives à partir de la graine choisie.</p>
+              </section>
+            </div>
+
+            <!-- ---------- Espace latent (F31, F32) ---------- -->
+            <div data-panneau="latent" hidden>
+              <section class="card">
+                <h2>Composantes du vecteur latent</h2>
+                <p class="note" id="latent-intro"></p>
+                <div id="pages-dims" class="pages" role="group" aria-label="Dimensions affichées"></div>
+                <div id="curseurs" class="curseurs"></div>
+                <button id="revenir" class="secondary" type="button">Revenir au vecteur initial</button>
+              </section>
+              <section class="card">
+                <h2>Interpoler entre deux reliefs</h2>
+                <div class="ligne">
+                  <label class="field compact"><span>Graine A</span><input id="graine-a" type="number" min="0" value="0" /></label>
+                  <label class="field compact"><span>Graine B</span><input id="graine-b" type="number" min="0" value="1" /></label>
+                </div>
+                <label class="field">
+                  <span>Position <output id="t-val">t = 0,00</output> <small>(0 = A, 1 = B)</small></span>
+                  <input id="t" type="range" min="0" max="1" step="0.01" value="0" />
+                </label>
+                <div class="ligne">
+                  <button id="interp-lecture" type="button">▶ Animation</button>
+                  <button id="interp-pause" type="button" disabled>⏸ Pause</button>
+                </div>
+                <div id="bande" class="bande" aria-label="Étapes de l'interpolation"></div>
+                <p class="note">z(t) = (1 − t)·z<sub>A</sub> + t·z<sub>B</sub> : chaque étape est décodée par le modèle.</p>
+              </section>
+            </div>
+
+            <!-- ---------- Reconstruction (F33) ---------- -->
+            <div data-panneau="reconstruction" hidden>
+              <section class="card">
+                <h2>Reliefs réels GEBCO (test)</h2>
+                <label class="field">
+                  <span>Région</span>
+                  <select id="filtre-region"></select>
+                </label>
+                <div id="galerie-reels" class="vignettes reels" role="list"></div>
+                <p class="note">
+                  Patches du jeu de <strong>test</strong> : leurs zones géographiques n'ont jamais été vues pendant
+                  l'entraînement.
+                </p>
+              </section>
+              <section class="card">
+                <button id="reconstruire" class="primary" type="button" disabled>Reconstruire avec le VAE</button>
+                <div id="recon-resultat" class="note"></div>
+              </section>
+            </div>
+          </aside>
+
+          <section class="viewer">
+            <div class="cartes">
+              <section class="card carte-card">
+                <div class="entete">
+                  <h2 id="titre-carte">Carte 2D</h2>
+                  <label class="field compact inline">
+                    <span>Échelle</span>
+                    <select id="echelle">
+                      <option value="commune">commune ±1 500 m</option>
+                      <option value="auto">adaptée au relief</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="vue-simple" class="carte-wrap">
+                  <canvas id="carte" width="512" height="512" aria-label="Carte du relief"></canvas>
+                  <canvas id="legende" class="legende" aria-label="Légende des couleurs"></canvas>
+                </div>
+                <div id="vue-recon" class="recon" hidden>
+                  <figure><canvas id="c-reel" width="256" height="256"></canvas><figcaption>Réel (GEBCO)</figcaption></figure>
+                  <figure><canvas id="c-rec" width="256" height="256"></canvas><figcaption>Reconstruit (VAE)</figcaption></figure>
+                  <figure><canvas id="c-err" width="256" height="256"></canvas><figcaption>Erreur (reconstruit − réel)</figcaption></figure>
+                  <canvas id="legende-recon" class="legende"></canvas>
+                  <canvas id="legende-err" class="legende"></canvas>
+                </div>
+                <p id="survol" class="survol">Survolez la carte pour lire une valeur.</p>
+                <p class="note">
+                  Relief relatif : écart à la profondeur moyenne du patch, en mètres. Nord en haut, pixel ≈ 1,85 km.
+                </p>
+              </section>
+
+              <section class="card carte-card">
+                <div class="entete">
+                  <h2>Vue 3D</h2>
+                  <select id="recon-3d" hidden aria-label="Relief affiché en 3D">
+                    <option value="reel">réel</option>
+                    <option value="rec">reconstruit</option>
+                  </select>
+                </div>
+                <div id="vue3d" class="vue3d" aria-label="Surface 3D interactive : glisser pour tourner, molette pour zoomer"></div>
+                <div class="outils3d">
+                  <label class="field compact inline">
+                    <span>Exagération verticale <output id="exag-val">×10</output></span>
+                    <input id="exag" type="range" min="1" max="30" step="1" value="10" />
+                  </label>
+                  <div class="ligne">
+                    <button id="cam-reset" type="button" title="Réinitialiser la caméra">⟲ Caméra</button>
+                    <button id="cam-dessus" type="button">Dessus</button>
+                    <button id="cam-rasante" type="button">Rasante</button>
+                  </div>
+                </div>
+                <p class="note">Glisser : tourner · molette : zoomer · clic droit : déplacer. Surface calculée à partir des valeurs générées.</p>
+              </section>
+            </div>
+
+            <section class="card">
+              <div class="entete">
+                <h2>Statistiques du relief affiché</h2>
+                <div class="downloads">
+                  <button id="dl-png" type="button" disabled>PNG 2D</button>
+                  <button id="dl-png3d" type="button" disabled>PNG 3D</button>
+                  <button id="dl-csv" type="button" disabled>CSV</button>
+                  <button id="dl-json" type="button" disabled>JSON</button>
+                </div>
+              </div>
+              <div id="stats" class="table-scroll"></div>
+            </section>
+          </section>
+        </div>
+      </section>
+
+      <!-- =================== Comparaison (F34, F19 à F23) =================== -->
+      <section id="espace-comparaison" hidden>
+        <p class="avert">
+          Les générations VAE et GAN sont <strong>indépendantes</strong> : une même graine ou un même vecteur
+          numérique ne produit pas « le même relief » dans les deux modèles, leurs espaces latents n'ont aucun
+          lien. Le relief réel sert de repère visuel ; les trois vues partagent la même échelle de couleurs et
+          d'altitude.
+        </p>
+        <div class="outils-comparaison card">
+          <label class="field compact inline">
+            <span>Échelle commune</span>
+            <select id="cmp-echelle">
+              <option value="fixe">±1 500 m</option>
+              <option value="auto">adaptée aux trois reliefs</option>
+            </select>
+          </label>
+          <label class="field compact inline">
+            <span>Exagération <output id="cmp-exag-val">×10</output></span>
+            <input id="cmp-exag" type="range" min="1" max="30" step="1" value="10" />
+          </label>
+          <button id="cmp-tout" class="secondary auto" type="button">Tout régénérer (nouvelles graines)</button>
+        </div>
+        <div class="comparaison">
+          <section class="card panneau reel" data-source="reel">
+            <div class="entete">
+              <h2><i class="pastille reel"></i>Réel (GEBCO, test)</h2>
+              <button id="cmp-reel" type="button">Autre relief réel</button>
+            </div>
+            <p class="sous" id="cmp-reel-info"></p>
+            <canvas class="cmp-carte" width="320" height="320"></canvas>
+            <div class="vue3d petite"></div>
+            <div class="cmp-stats note"></div>
+          </section>
+          <section class="card panneau vae" data-source="vae">
+            <div class="entete">
+              <h2><i class="pastille vae"></i>VAE</h2>
+              <div class="ligne">
+                <input class="cmp-graine" type="number" min="0" value="0" aria-label="Graine du VAE" />
+                <button class="cmp-generer" type="button">Générer</button>
+              </div>
+            </div>
+            <p class="sous">Généré par le décodeur du VAE</p>
+            <canvas class="cmp-carte" width="320" height="320"></canvas>
+            <div class="vue3d petite"></div>
+            <div class="cmp-stats note"></div>
+          </section>
+          <section class="card panneau gan" data-source="gan">
+            <div class="entete">
+              <h2><i class="pastille gan"></i>GAN</h2>
+              <div class="ligne">
+                <input class="cmp-graine" type="number" min="0" value="0" aria-label="Graine du GAN" />
+                <button class="cmp-generer" type="button">Générer</button>
+              </div>
+            </div>
+            <p class="sous">Généré par le générateur du GAN</p>
+            <canvas class="cmp-carte" width="320" height="320"></canvas>
+            <div class="vue3d petite"></div>
+            <div class="cmp-stats note"></div>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>Diversité des générations</h2>
+          <div class="ligne">
+            <label class="field compact inline"><span>Première graine</span><input id="div-graine" type="number" min="0" value="0" /></label>
+            <button id="div-btn" type="button">Générer 12 reliefs par modèle</button>
+          </div>
+          <div id="diversite" class="diversite"></div>
+          <p class="note">
+            Cherchez les répétitions : des reliefs presque identiques pour des graines différentes signalent un
+            <em>mode collapse</em> du GAN (il ne sait plus produire qu'une partie des formes). Le VAE, lui, tend
+            à produire des reliefs plus lisses que les réels. Les 12 réels sont choisis exprès dans des régions
+            différentes : comparez plutôt la mesure « sur tout le test », calculée sur 750 cartes par source.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Caractéristiques statistiques (jeu de test)</h2>
+          <div id="cmp-statistiques" class="table-scroll"></div>
+          <p class="note">
+            Médianes calculées par Python sur tous les patches de test et autant de générations par modèle.
+            W1 : distance de Wasserstein entre distributions (0 = identiques), rapportée à l'écart-type des réels.
+            Une ressemblance statistique ne prouve pas le réalisme géologique.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Courbes d'entraînement</h2>
+          <p class="note">Présentées séparément : les pertes du VAE et du GAN ne mesurent pas la même grandeur.</p>
+          <div class="courbes">
+            <canvas id="ch-vae"></canvas>
+            <canvas id="ch-vae-rmse"></canvas>
+            <canvas id="ch-gan"></canvas>
+            <canvas id="ch-gan-suivi"></canvas>
+          </div>
+          <h3>Le GAN au fil des époques</h3>
+          <label class="field">
+            <span>Époque <output id="evo-val"></output> <small>(mêmes vecteurs z, graines 0 à 7)</small></span>
+            <input id="evo" type="range" min="0" max="0" step="1" value="0" />
+          </label>
+          <div id="evolution" class="vignettes evolution"></div>
+        </section>
+
+        <section class="card">
+          <h2>Synthèse comparative</h2>
+          <div id="synthese" class="table-scroll"></div>
+        </section>
+      </section>
+
+      <!-- =================== Explications =================== -->
+      <section class="card learn">
+        <h2>Comprendre</h2>
+        <div class="learn-grid">
+          <details open>
+            <summary>Qu'est-ce qu'un modèle génératif&nbsp;?</summary>
+            <p>
+              Un modèle génératif apprend la <strong>distribution</strong> d'un jeu de données pour en produire de
+              nouveaux exemples plausibles. Ici, il a vu 3 500 reliefs réels de 64 × 64 pixels et fabrique des
+              reliefs qui leur ressemblent sans les recopier. Chaque relief synthétique part d'un vecteur de
+              quelques nombres tirés au hasard : le <em>vecteur latent</em> z.
+            </p>
+          </details>
+          <details open>
+            <summary>L'espace latent</summary>
+            <p>
+              C'est l'espace des vecteurs z (16 nombres pour le VAE, 32 pour le GAN). Le réseau transforme ce
+              petit vecteur en 4 096 valeurs de relief. Deux z proches donnent des reliefs proches : on peut
+              donc déplacer un curseur ou interpoler entre deux vecteurs et voir le relief se transformer
+              progressivement. Les composantes n'ont pas de sens imposé : le modèle les a organisées lui-même.
+            </p>
+          </details>
+          <details open>
+            <summary>Le VAE (autoencodeur variationnel)</summary>
+            <p>
+              Un <strong>encodeur</strong> résume chaque carte par une petite gaussienne (moyenne μ, variance σ²)
+              dans l'espace latent ; un <strong>décodeur</strong> reconstruit la carte à partir d'un point tiré
+              dans cette gaussienne. La perte combine l'erreur de reconstruction et un terme <strong>KL</strong>
+              qui rapproche les gaussiennes de N(0, I). Ce terme permet de générer en tirant z au hasard. Le prix à
+              payer : des reliefs un peu lissés.
+            </p>
+          </details>
+          <details>
+            <summary>Le GAN (réseau antagoniste génératif)</summary>
+            <p>
+              Un <strong>générateur</strong> (ici, la même architecture que le décodeur du VAE) produit des cartes
+              à partir de z. Un <strong>discriminateur</strong> apprend à distinguer cartes réelles et générées.
+              Les deux s'entraînent à tour de rôle, l'un contre l'autre. Le générateur ne voit jamais directement
+              les données : il apprend uniquement par les « critiques » du discriminateur. Il n'y a pas
+              d'encodeur : un GAN ne sait pas reconstruire un relief donné.
+            </p>
+          </details>
+          <details>
+            <summary>Stabilité et <em>mode collapse</em></summary>
+            <p>
+              La perte du VAE diminue régulièrement et se mesure sur un jeu de validation. Celles du GAN
+              oscillent : quand l'un progresse, l'autre recule, et aucune ne dit si les cartes sont bonnes. Le
+              GAN peut aussi se « replier » sur quelques formes qui trompent bien le discriminateur : c'est le
+              <em>mode collapse</em>, visible dans la galerie de diversité. On a stabilisé l'apprentissage par une
+              normalisation spectrale du discriminateur, et choisi l'époque dont les statistiques ressemblent le
+              plus aux données de validation.
+            </p>
+          </details>
+          <details>
+            <summary>Les données et leurs limites</summary>
+            <p>
+              Les reliefs réels viennent de la grille GEBCO_2021 (15″), moyennée à environ 1,85 km par pixel, dans
+              13 régions : dorsales, monts sous-marins, canyons, fosse, plaines abyssales. Les zones avec des terres
+              émergées sont exclues. Les modèles n'apprennent que des <strong>formes relatives</strong> (écart à la
+              moyenne du patch, écrêté à ±1 500 m) : ils ne savent rien de la profondeur absolue, de la position
+              géographique ni de la géologie. En plein océan, GEBCO est souvent déduit de l'altimétrie satellitaire
+              et donc lissé, avec des traces de levés multifaisceaux par endroits.
+            </p>
+          </details>
+        </div>
+        <p id="model-info" class="note"></p>
+        <p id="sources" class="note sources"></p>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

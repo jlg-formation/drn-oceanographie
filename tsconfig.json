@@ -19,10 +19,12 @@
     "TP3/front-end/src",
     "TP4/front-end/src",
     "TP5/front-end/src",
+    "TP6/front-end/src",
     "vite.config.ts",
     "vite.tp2b.config.ts",
     "vite.tp3.config.ts",
     "vite.tp4.config.ts",
-    "vite.tp5.config.ts"
+    "vite.tp5.config.ts",
+    "vite.tp6.config.ts"
   ]
 }

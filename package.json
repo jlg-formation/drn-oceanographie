@@ -17,14 +17,19 @@
     "preview:tp4": "vite preview --config vite.tp4.config.ts",
     "dev:tp5": "vite --config vite.tp5.config.ts",
     "build:tp5": "vite build --config vite.tp5.config.ts",
-    "preview:tp5": "vite preview --config vite.tp5.config.ts"
+    "preview:tp5": "vite preview --config vite.tp5.config.ts",
+    "dev:tp6": "vite --config vite.tp6.config.ts",
+    "build:tp6": "vite build --config vite.tp6.config.ts",
+    "preview:tp6": "vite preview --config vite.tp6.config.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
-    "onnxruntime-web": "^1.30.0"
+    "onnxruntime-web": "^1.30.0",
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.12",
+    "@types/three": "^0.170.0",
     "typescript": "^5.6.3",
     "vite": "^6.0.3"
   }

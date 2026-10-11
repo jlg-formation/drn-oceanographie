@@ -166,3 +166,61 @@ run = [
   "mise run tp5_06_test",
   "mise run tp5_07_web",
 ]
+
+[tasks.tp6_01_download]
+description = "Télécharge les extraits GEBCO_2021 des 13 régions d'intérêt (ERDDAP Ifremer, TP6)"
+run = "uv run python TP6/download_data.py"
+
+[tasks.tp6_02_prepare]
+description = "Patches 64 × 64, exclusion des terres, séparation spatiale, normalisation, figures (TP6)"
+run = "uv run python TP6/prepare_dataset.py"
+
+[tasks.tp6_03_train_vae]
+description = "Entraîne le VAE convolutionnel (TP6, GPU si disponible)"
+run = "uv run python TP6/train_vae.py"
+
+[tasks.tp6_03_train_vae_cpu]
+description = "Entraînement compact du VAE pour machine sans GPU (TP6, NF02)"
+run = "uv run python TP6/train_vae.py --rapide --cpu"
+
+[tasks.tp6_04_train_gan]
+description = "Entraîne le GAN convolutionnel (TP6, GPU si disponible)"
+run = "uv run python TP6/train_gan.py"
+
+[tasks.tp6_04_train_gan_cpu]
+description = "Entraînement compact du GAN pour machine sans GPU (TP6, NF02)"
+run = "uv run python TP6/train_gan.py --rapide --cpu"
+
+[tasks.tp6_05_generate]
+description = "Galeries, interpolations, parcours latents et reconstruction à partir des checkpoints (TP6)"
+run = "uv run python TP6/generate.py"
+
+[tasks.tp6_06_evaluate]
+description = "Compare VAE et GAN : reconstruction, diversité, statistiques, courbes, synthèse (TP6)"
+run = "uv run python TP6/evaluate.py"
+
+[tasks.tp6_07_export]
+description = "Exporte encodeur, décodeur et générateur en ONNX, les vérifie, écrit les données du site (TP6/model)"
+run = "uv run python TP6/export_onnx.py"
+
+[tasks.tp6_08_test]
+description = "Tests unitaires et de données (TP6)"
+run = "uv run pytest TP6/tests -v"
+
+[tasks.tp6_09_web]
+description = "Lance Ocean Terrain Lab (serveur de dev Vite sur http://localhost:5178)"
+run = "bun run dev:tp6"
+
+[tasks.tp6]
+description = "Workflow TP6 complet : download -> prepare -> VAE -> GAN -> generate -> evaluate -> export -> test -> web"
+run = [
+  "mise run tp6_01_download",
+  "mise run tp6_02_prepare",
+  "mise run tp6_03_train_vae",
+  "mise run tp6_04_train_gan",
+  "mise run tp6_05_generate",
+  "mise run tp6_06_evaluate",
+  "mise run tp6_07_export",
+  "mise run tp6_08_test",
+  "mise run tp6_09_web",
+]
